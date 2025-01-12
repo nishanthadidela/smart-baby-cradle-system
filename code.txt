@@ -1,0 +1,215 @@
+
+#define BLYNK_TEMPLATE_ID "TMPL3G60ZKjDI"
+#define BLYNK_TEMPLATE_NAME "Smart Baby Cradle System"
+#define BLYNK_AUTH_TOKEN "1rO11QOuu39ShkRROFx97CqTg2unlwWL"
+
+char ssid[] = "elegant";         //wifi name
+char pass[] = "smartwork";        //wifi password
+#define BLYNK_PRINT Serial
+#include <ESP8266WiFi.h>
+#include <BlynkSimpleEsp8266.h>
+#include <DHT.h>               // Download and Install the DHT library
+#include<Servo.h>
+
+#define DHTPIN D5             // connect out of DHT sensor to nodemcu D5
+
+#define DHTTYPE DHT11       // DHT 11
+
+DHT dht(DHTPIN, DHTTYPE);
+
+const int soundanalogPin = A0;     // KY-037 analog interface connect A0 of nodemcu to D0 of sound sensor
+const int buzzerPin = D4;         // Connect Speaker pin to D4
+const int fan = D6;             // Connect relay pin to D6 and connect fan to COM pin and NO pin of relay
+const int watersensor = D3;    // Connect digital pin of water sensor to D3
+
+const int servoPin = D7;   // connect servo data pin to nodemcu D7
+Servo Servo1;
+
+int c;                  // analog readings of sound sensor
+
+BlynkTimer timer;
+
+BLYNK_WRITE(V4){                                // virtual pin to turn On and off Music
+   int pinvalue = param.asInt();
+   if(pinvalue == HIGH ){
+   soundon();
+   }
+   else{
+    digitalWrite(buzzerPin,LOW);
+    noTone(buzzerPin);    
+  }
+  }
+
+  BLYNK_WRITE(V5){                                // virtual pin to turn On and off fan 
+   int pinvalue = param.asInt();
+   if(pinvalue == HIGH ){
+   digitalWrite(fan,LOW);
+   }
+   else{
+    digitalWrite(fan,HIGH);    
+  }
+  }
+
+
+void Sensordata()
+{
+  float h = dht.readHumidity();                 // for Humidity
+  float t = dht.readTemperature();             // for Temperature
+   
+  if (isnan(h) || isnan(t)) {
+    Serial.println("Failed to read from DHT sensor!");
+    return;
+  }
+  Blynk.virtualWrite(V0, t);   // select V0 virtual pin for Temperature
+  Blynk.virtualWrite(V1, h);   // select V1 virtual pin for Humidity
+}
+
+void wetness(){
+  int w = digitalRead(watersensor);            // for Wetness
+  if( w == HIGH){
+     WidgetLED red(V2);
+     red.off();
+  }
+  else{
+     WidgetLED red(V2);
+     red.on();
+  }
+}
+
+  void crydata()
+{    
+  c = analogRead(soundanalogPin);           // for cry  
+  if(c >= 60) 
+  {
+    Servo1.write(140);
+    delay(300);
+    Servo1.write(0);
+    delay(300);
+    Servo1.write(140);
+    delay(300);
+    Servo1.write(0);
+    delay(300);
+    Servo1.write(140);
+    delay(300);
+    Servo1.write(0);
+    delay(300);
+    Servo1.write(140);
+    delay(300);
+    Servo1.write(0);
+    delay(300);
+  }
+  else
+  {
+    Servo1.write(0);
+  }
+    Blynk.virtualWrite(V3, c);  // select V3 virtual pin for Cry sound
+}
+
+void setup()
+{
+   Serial.begin(115200);
+    delay(10);
+
+  Blynk.begin(BLYNK_AUTH_TOKEN, ssid, pass);
+   pinMode(buzzerPin,OUTPUT);
+   pinMode(soundanalogPin, INPUT);
+   pinMode(watersensor,INPUT);
+   pinMode(fan,OUTPUT);
+   Servo1.attach(servoPin); 
+   Servo1.write(0);
+
+  dht.begin();
+  timer.setInterval(1000L, Sensordata);
+  timer.setInterval(1000L, crydata);
+  timer.setInterval(1000L, wetness);
+}
+
+void loop()
+{
+  Blynk.run();
+  timer.run();
+}
+
+void soundon(){
+tone(buzzerPin, 932);  
+delay(840); 
+noTone(buzzerPin); 
+tone(buzzerPin, 466); 
+delay(850); 
+noTone(buzzerPin); 
+tone(buzzerPin, 415); 
+delay(58); 
+noTone(buzzerPin); 
+tone(buzzerPin, 311); 
+delay(63); 
+noTone(buzzerPin); 
+tone(buzzerPin, 311); 
+delay(53); 
+noTone(buzzerPin); 
+tone(buzzerPin, 415); 
+delay(49); 
+noTone(buzzerPin); 
+tone(buzzerPin, 311); 
+delay(49); 
+noTone(buzzerPin); 
+tone(buzzerPin, 415); 
+delay(44); 
+noTone(buzzerPin); 
+tone(buzzerPin, 349); 
+delay(451); 
+noTone(buzzerPin); 
+tone(buzzerPin, 311); 
+delay(466); 
+noTone(buzzerPin); 
+tone(buzzerPin, 311); 
+delay(53); 
+noTone(buzzerPin); 
+tone(buzzerPin, 349); 
+delay(53); 
+noTone(buzzerPin); 
+tone(buzzerPin, 311); 
+delay(49); 
+noTone(buzzerPin); 
+tone(buzzerPin, 349); 
+delay(49); 
+noTone(buzzerPin); 
+tone(buzzerPin, 349); 
+delay(53); 
+noTone(buzzerPin); 
+tone(buzzerPin, 311); 
+delay(63); 
+noTone(buzzerPin); 
+tone(buzzerPin, 349); 
+delay(49); 
+noTone(buzzerPin); 
+tone(buzzerPin, 311); 
+delay(68); 
+noTone(buzzerPin);
+tone(buzzerPin, 440); 
+delay(78); 
+noTone(buzzerPin); 
+tone(buzzerPin, 466); 
+delay(86); 
+noTone(buzzerPin); 
+tone(buzzerPin, 523); 
+delay(78); 
+noTone(buzzerPin); 
+tone(buzzerPin, 554); 
+delay(93); 
+noTone(buzzerPin); 
+tone(buzzerPin, 622); 
+delay(82); 
+noTone(buzzerPin); 
+tone(buzzerPin, 698); 
+delay(93); 
+noTone(buzzerPin); 
+tone(buzzerPin, 784); 
+delay(78); 
+noTone(buzzerPin); 
+tone(buzzerPin, 880); 
+delay(116); 
+noTone(buzzerPin); 
+tone(buzzerPin, 932); 
+delay(1363); 
+noTone(buzzerPin);
+ }
